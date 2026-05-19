@@ -1,0 +1,66 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { AppSidebar } from '../components/AppSidebar';
+import { LuxuryDock } from '../components/LuxuryDock';
+import { UpdateToast } from '../components/UpdateToast';
+import { BootSequence } from '../components/BootSequence';
+import { PageLoader } from '../components/PageLoader';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Life Panel - Personal & Business Finance Platform" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- PWA Manifest & Theme Color -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#050505" />
+
+    <!-- Preconnect hints for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Load Playfair Display and Inter fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap&subset=latin" rel="stylesheet" />
+
+    <title>{title}</title>
+    <!-- Smooth SPA-like transitions between pages -->
+    <ClientRouter />
+  </head>
+  <body class="bg-obsidian text-platinum antialiased min-h-screen flex flex-col md:flex-row">
+    <!-- Boot Sequence only runs on client -->
+    <BootSequence client:load />
+
+    <!-- Game-style navigation loader — bottom-left, non-intrusive -->
+    <PageLoader client:load />
+
+    <!-- Desktop Sidebar (hidden on mobile) -->
+    <AppSidebar client:load currentPath={currentPath} />
+
+    <!-- Main Content Area -->
+    <!-- Add left margin on md+ to account for the sidebar (default width 240px, or 80px if we supported initial collapsed state from SSR, but we assume 240px for layout) -->
+    <main class="flex-1 min-w-0 md:ml-[240px] transition-all duration-300">
+      <div class="container mx-auto p-4 md:p-8 pb-24 md:pb-8">
+        <slot />
+      </div>
+    </main>
+
+    <!-- Mobile Bottom Dock (hidden on md+) -->
+    <LuxuryDock client:load currentPath={currentPath} />
+    
+    <!-- Global Toasts -->
+    <UpdateToast client:load />
+  </body>
+</html>

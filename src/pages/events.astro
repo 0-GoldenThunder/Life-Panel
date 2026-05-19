@@ -1,0 +1,22 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { EventCalendar } from '../components/events/EventCalendar';
+---
+
+<AppLayout title="Events & Goals">
+  <div class="flex flex-col gap-8 max-w-7xl mx-auto w-full pt-8 pb-32 lg:pb-12 h-full min-h-screen">
+    
+    <header class="flex flex-col gap-2">
+      <h1 class="text-3xl lg:text-4xl font-bold font-sans tracking-tight text-platinum flex items-center gap-3">
+        Events & Goals
+      </h1>
+      <p class="text-platinum/50 text-sm lg:text-base max-w-2xl">
+        Manage your schedule and track your primary objectives.
+      </p>
+    </header>
+
+    <div class="flex-1">
+      <EventCalendar client:load />
+    </div>
+  </div>
+</AppLayout>

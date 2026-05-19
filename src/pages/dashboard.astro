@@ -1,0 +1,76 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { NetBalanceCard } from '../components/dashboard/NetBalanceCard';
+import { MonthlySpendCard } from '../components/dashboard/MonthlySpendCard';
+import { UpcomingPaymentsCard } from '../components/dashboard/UpcomingPaymentsCard';
+import { FinanceMiniChart } from '../components/dashboard/FinanceMiniChart';
+import { PersonalSnapshot } from '../components/dashboard/PersonalSnapshot';
+import { BusinessSnapshot } from '../components/dashboard/BusinessSnapshot';
+import { UpcomingEventsCard } from '../components/dashboard/UpcomingEventsCard';
+import { GrowthMiniChart } from '../components/dashboard/GrowthMiniChart';
+import { MockDataInjector } from '../components/dashboard/MockDataInjector';
+import { OverallFinancialStatusChart } from '../components/dashboard/OverallFinancialStatusChart';
+
+const today = new Date();
+const dateString = today.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+---
+
+<AppLayout title="Dashboard - Life Panel">
+  
+  <header class="mb-8 mt-2 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-serif text-platinum tracking-tight">Dashboard</h1>
+      <p class="text-platinum/50 mt-1 text-sm tracking-wide">{dateString}</p>
+    </div>
+    
+    <div>
+      <MockDataInjector client:load />
+    </div>
+  </header>
+
+  <!-- Bento Box Grid Layout -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[160px] gap-4">
+    
+    <!-- Row 1: High Priority Stats -->
+    <section class="col-span-1 md:col-span-2 row-span-1">
+      <NetBalanceCard client:load />
+    </section>
+
+    <section class="col-span-1 row-span-1">
+      <MonthlySpendCard client:load />
+    </section>
+
+    <section class="col-span-1 row-span-2">
+      <UpcomingPaymentsCard client:load />
+    </section>
+
+    <!-- Row 2: Charts and Snapshots -->
+    <section class="col-span-1 md:col-span-2 row-span-1">
+      <FinanceMiniChart client:load />
+    </section>
+
+    <section class="col-span-1 row-span-1">
+      <UpcomingEventsCard client:load />
+    </section>
+
+    <!-- Row 3: Snapshots and Growth -->
+    <section class="col-span-1 md:col-span-2 row-span-1">
+      <GrowthMiniChart client:load />
+    </section>
+
+    <section class="col-span-1 row-span-1">
+      <PersonalSnapshot client:load />
+    </section>
+
+    <section class="col-span-1 row-span-1">
+      <BusinessSnapshot client:load />
+    </section>
+
+  </div>
+
+  <!-- Centerpiece Overall Financial Status Summary -->
+  <section class="mt-6 w-full">
+    <OverallFinancialStatusChart client:load />
+  </section>
+
+</AppLayout>

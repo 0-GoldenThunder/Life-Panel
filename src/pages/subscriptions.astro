@@ -1,0 +1,18 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { RecurringManager } from '../components/finance/RecurringManager';
+
+---
+
+<AppLayout title="Subscriptions - Life Panel" currentPath="/subscriptions">
+  
+  <header class="mb-8 mt-2">
+    <h1 class="text-3xl font-serif text-platinum tracking-tight">Subscriptions</h1>
+    <p class="text-platinum/50 mt-1 text-sm tracking-wide">Manage your recurring operational costs and personal subscriptions.</p>
+  </header>
+
+  <section class="max-w-5xl">
+    <RecurringManager type="subscription" client:load />
+  </section>
+
+</AppLayout>
