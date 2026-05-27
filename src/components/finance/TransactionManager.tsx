@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $transactions, $activeCurrency, $userSession, convertCurrency } from '../../stores/lifeStore';
+import { $transactions, $activeCurrency, $userSession, $isDbReady, convertCurrency } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -14,6 +14,7 @@ interface TransactionManagerProps {
 export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedScope }) => {
   const transactions = useStore($transactions);
   const currency = useStore($activeCurrency);
+  const isDbReady = useStore($isDbReady);
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   
   // If forcedScope is provided, we use it, otherwise we default to 'all'
@@ -172,7 +173,11 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedSc
       )}
 
       <div className="flex flex-col gap-3">
-        {activeTxs.length === 0 ? (
+        {!isDbReady ? (
+          <div className="p-8 text-center border border-[#222] rounded-xl bg-[#0A0A0A]/30 text-platinum/40">
+            <span className="animate-pulse">Loading...</span>
+          </div>
+        ) : activeTxs.length === 0 ? (
           <div className="p-8 text-center border border-[#222] rounded-xl bg-[#0A0A0A]/30 text-platinum/40">
             No transactions found.
           </div>

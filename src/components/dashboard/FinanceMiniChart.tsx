@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { $transactions, $activeCurrency } from "../../stores/lifeStore";
+import { $transactions, $activeCurrency, $totalBalance } from "../../stores/lifeStore";
 import { Icon } from "../ui/Icon";
 import { LineChart } from "lucide-react";
 import {
@@ -23,28 +23,34 @@ export const FinanceMiniChart: React.FC = () => {
     null,
   );
 
-  // 1. Aggregate data based on period
-  const aggregated =
+  const totalBalance = useStore($totalBalance);
+
+  // 1. Aggregate data based on period, using true balance like the huge chart
+  const tempAgg =
     period === "month"
       ? aggregateLast30Days(transactions, currency, 0)
       : aggregateLast12Months(transactions, currency, 0);
 
-  // 2. Compute cumulative cashflow trend (running sum starting from 0)
-  let cumCash = 0;
-  const trendValues = aggregated.map((p) => {
-    cumCash += p.cashflow;
-    return cumCash;
-  });
+  const netPeriodCashflow = tempAgg.reduce((sum, p) => sum + p.cashflow, 0);
+  const startBalance = totalBalance - netPeriodCashflow;
+
+  const aggregated =
+    period === "month"
+      ? aggregateLast30Days(transactions, currency, startBalance)
+      : aggregateLast12Months(transactions, currency, startBalance);
+
+  // 2. Extract trend values from the computed balances
+  const trendValues = aggregated.map((p) => p.balance);
 
   // If no data, fallback
   if (trendValues.length === 0) {
     trendValues.push(0, 0);
   }
 
-  // 3. Determine if Net Gain or Net Loss
-  // A Net Gain is when the ending cumulative cashflow is >= 0
+  // 3. Determine if Net Gain or Net Loss based on the period's delta
   const finalTrendVal = trendValues[trendValues.length - 1];
-  const isGain = finalTrendVal >= 0;
+  const initialTrendVal = trendValues[0];
+  const isGain = finalTrendVal >= initialTrendVal;
 
   // 4. Normalize coordinates for a wider SVG viewport to better fill the card
   const width = 420;
