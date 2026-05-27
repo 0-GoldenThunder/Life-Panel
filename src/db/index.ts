@@ -215,6 +215,39 @@ export const initDatabase = async () => {
   return db;
 };
 
+export const forceRefreshData = async () => {
+  if (!dbInstance) return;
+  
+  $isSyncing.set(true);
+  try {
+    const [events, txs, subs, inflows, tasks] = await Promise.all([
+      dbInstance.events.find().exec(),
+      dbInstance.transactions.find().exec(),
+      dbInstance.subscriptions.find().exec(),
+      dbInstance.inflows.find().exec(),
+      dbInstance.tasks.find().exec(),
+    ]);
+
+    $events.set(events.map((doc: any) => doc.toJSON()));
+    $transactions.set(txs.map((doc: any) => doc.toJSON()));
+    $subscriptions.set(subs.map((doc: any) => doc.toJSON()));
+    $inflows.set(inflows.map((doc: any) => doc.toJSON()));
+    $tasks.set(tasks.map((doc: any) => doc.toJSON()));
+
+    for (const repl of activeReplications) {
+      if (typeof repl.reSync === 'function') {
+        repl.reSync();
+      }
+    }
+  } catch (err) {
+    console.warn('[LifeManager] Error during force refresh:', err);
+  } finally {
+    setTimeout(() => {
+      $isSyncing.set(false);
+    }, 500);
+  }
+};
+
 // ── Multi-Tab Lock Contention Coordination ─────────────────────
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', async (event) => {

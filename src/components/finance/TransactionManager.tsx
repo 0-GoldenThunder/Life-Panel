@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $transactions, $activeCurrency, $userSession } from '../../stores/lifeStore';
+import { $transactions, $activeCurrency, $userSession, convertCurrency } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -201,7 +201,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedSc
               
               <div className="flex items-center gap-6">
                 <span className={`text-lg font-sans font-semibold tabular-nums ${tx.type === 'income' ? 'text-luxury-gold glow-gold' : 'text-soft-crimson glow-error'}`}>
-                  <span className="font-serif mr-1">{tx.type === 'income' ? '+' : '-'}{tx.currency}</span><span className="font-sans tabular-nums">{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-serif mr-1">{tx.type === 'income' ? '+' : '-'}{currency}</span><span className="font-sans tabular-nums">{convertCurrency(tx.amount, tx.currency || 'MYR', currency).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </span>
                 
                 <button 

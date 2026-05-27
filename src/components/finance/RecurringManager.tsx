@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $subscriptions, $inflows, $activeCurrency, $userSession } from '../../stores/lifeStore';
+import { $subscriptions, $inflows, $activeCurrency, $userSession, convertCurrency } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -191,7 +191,7 @@ export const RecurringManager: React.FC<RecurringManagerProps> = ({ type }) => {
               
               <div className="flex items-center gap-6">
                 <span className={`text-lg font-sans font-semibold tabular-nums ${!item.isActive ? 'text-platinum/50' : type === 'inflow' ? 'text-luxury-gold glow-gold' : 'text-soft-crimson glow-error'}`}>
-                  <span className="font-serif italic mr-1">{type === 'inflow' ? '+' : '-'}{item.currency}</span><span className="font-sans tabular-nums">{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-serif italic mr-1">{type === 'inflow' ? '+' : '-'}{currency}</span><span className="font-sans tabular-nums">{convertCurrency(item.amount, item.currency || 'MYR', currency).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </span>
                 
                 <button 

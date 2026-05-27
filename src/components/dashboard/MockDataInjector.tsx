@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $transactions, $subscriptions, $events } from '../../stores/lifeStore';
+import { $transactions, $subscriptions, $events, $isSyncing } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
-import { Database, Trash2 } from 'lucide-react';
+import { Database, Trash2, RefreshCw } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import type { Transaction, Subscription, Event } from '../../types/models';
+import { forceRefreshData } from '../../db/index';
 
 export const MockDataInjector: React.FC = () => {
   const [injected, setInjected] = useState(false);
   const txs = useStore($transactions);
+  const isSyncing = useStore($isSyncing);
 
   // Check if we already have mock data (simple check)
   const hasMockData = txs.some(t => t.note === 'MOCK_DATA');
@@ -242,6 +244,15 @@ export const MockDataInjector: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2">
+      <button 
+        onClick={() => forceRefreshData()}
+        disabled={isSyncing}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1A1A1A] hover:bg-[#222] text-platinum/60 hover:text-luxury-gold border border-[#333] hover:border-luxury-gold/30 transition-colors text-xs font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Icon icon={RefreshCw} className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+        Refresh Data
+      </button>
+
       {hasMockData || injected ? (
         <button 
           onClick={clearData}

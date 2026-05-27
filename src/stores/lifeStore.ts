@@ -21,7 +21,7 @@ export const $userId = atom<string | null>(null);
 export const $isSyncing = atom<boolean>(false);
 export const $syncError = atom<string | null>(null); // null = healthy
 export const $lastSyncTime = atom<Date | null>(null);
-export const $activeCurrency = atom<string>('MYR'); // Default currency
+export const $activeCurrency = atom<string>('IDR'); // Default currency
 export const $isDbReady = atom<boolean>(false); // True after initDatabase() resolves
 
 // Mock Exchange Rates relative to USD for MVP

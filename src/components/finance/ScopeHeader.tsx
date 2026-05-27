@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { $personalBalance, $businessBalance, $activeCurrency, $transactions } from '../../stores/lifeStore';
+import { $personalBalance, $businessBalance, $activeCurrency, $transactions, convertCurrency } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
 import { Wallet, Briefcase, TrendingUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -32,7 +32,7 @@ export const ScopeHeader: React.FC<ScopeHeaderProps> = ({ scope }) => {
       new Date(t.date).getMonth() === currentMonth &&
       new Date(t.date).getFullYear() === currentYear
     )
-    .reduce((sum, tx) => sum + tx.amount, 0); // Simplified for MVP
+    .reduce((sum, tx) => sum + convertCurrency(tx.amount, tx.currency || 'MYR', currency), 0); // Simplified for MVP
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

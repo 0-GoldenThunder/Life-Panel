@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { $transactions, $totalBalance } from '../stores/lifeStore';
+import { $transactions, $totalBalance, $activeCurrency, convertCurrency } from '../stores/lifeStore';
 import { DeliberateVoid } from './ui/DeliberateVoid';
 import { cn } from '../lib/utils';
 import type { Transaction } from '../types/models';
@@ -8,6 +8,7 @@ import type { Transaction } from '../types/models';
 export const FiscalCommandCenter: React.FC = () => {
   const transactions = useStore($transactions);
   const totalBalance = useStore($totalBalance);
+  const currency = useStore($activeCurrency);
 
   const activeTxs = transactions.filter(t => !t._deleted).sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -22,7 +23,7 @@ export const FiscalCommandCenter: React.FC = () => {
           "text-3xl font-serif tracking-tight",
           totalBalance < 0 ? "text-soft-crimson glow-error" : "text-luxury-gold glow-gold"
         )}>
-          ${totalBalance.toFixed(2)}
+          {currency}{totalBalance.toFixed(2)}
         </span>
       </div>
 
@@ -41,7 +42,7 @@ export const FiscalCommandCenter: React.FC = () => {
                   "text-sm font-semibold",
                   tx.type === 'expense' ? "text-platinum/80" : "text-luxury-gold"
                 )}>
-                  {tx.type === 'expense' ? '-' : '+'}${tx.amount.toFixed(2)}
+                  {tx.type === 'expense' ? '-' : '+'}{currency}{convertCurrency(tx.amount, tx.currency || 'MYR', currency).toFixed(2)}
                 </div>
               </div>
             ))}
