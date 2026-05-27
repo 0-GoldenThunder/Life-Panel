@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $events } from '../../stores/lifeStore';
+import { $events, $userSession } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -70,9 +70,12 @@ export const EventCalendar: React.FC = () => {
       startDateObj.setHours(hours, minutes, 0, 0);
     }
     
+    const session = $userSession.get();
+    const userId = session?.user?.id || 'default_user';
+
     await db.events.insert({
       id: uuidv4(),
-      userId: 'default_user',
+      userId,
       title,
       description,
       status: 'pending',
@@ -92,6 +95,7 @@ export const EventCalendar: React.FC = () => {
     setAllDay(true);
     setIsFormOpen(false);
   };
+
 
   // Calendar rendering
   const days = [];

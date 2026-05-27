@@ -1,17 +1,22 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { $activeCurrency } from '../../stores/lifeStore';
+import { $activeCurrency, $userSession, signOutUser } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
-import { Globe, User, Palette, Download, Shield } from 'lucide-react';
+import { Globe, User, Palette, Download, Shield, LogOut } from 'lucide-react';
 
 export const SettingsManager: React.FC = () => {
   const activeCurrency = useStore($activeCurrency);
+  const userSession = useStore($userSession);
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     $activeCurrency.set(e.target.value);
     // Ideally, we'd also save this to a user profile in the DB, 
     // but for now setting the store is enough for the MVP.
   };
+
+  const email = userSession?.user?.email || 'offline@lifepanel.app';
+  const displayName = userSession?.user?.user_metadata?.full_name || email.split('@')[0];
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <div className="flex flex-col gap-8 max-w-3xl">
@@ -22,18 +27,26 @@ export const SettingsManager: React.FC = () => {
           <Icon icon={User} className="w-4 h-4" />
           Profile
         </h2>
-        <div className="bg-[#0A0A0A]/50 border border-[#222] rounded-xl p-6 backdrop-blur-xl flex flex-col gap-4">
-          <div className="flex items-center gap-4">
+        <div className="bg-[#0A0A0A]/50 border border-[#222] rounded-xl p-6 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-4 flex-1">
             <div className="w-16 h-16 rounded-full bg-luxury-gold/20 flex items-center justify-center text-luxury-gold text-2xl font-bold font-sans">
-              LP
+              {initials}
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-platinum">Life Panel User</span>
-              <span className="text-platinum/50 text-sm">user@lifepanel.app</span>
+              <span className="text-xl font-bold text-platinum capitalize">{displayName}</span>
+              <span className="text-platinum/50 text-sm">{email}</span>
             </div>
           </div>
+          <button 
+            onClick={signOutUser}
+            className="flex items-center justify-center gap-2 bg-[#1A1A1A] hover:bg-[#222] border border-luxury-gold/20 hover:border-luxury-gold/50 text-luxury-gold hover:glow-gold px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm cursor-pointer"
+          >
+            <Icon icon={LogOut} className="w-4 h-4" />
+            Sign Out
+          </button>
         </div>
       </section>
+
 
       {/* Preferences Section */}
       <section className="flex flex-col gap-4">

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
-import { $isDbReady, $isSyncing, $syncError } from '../stores/lifeStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { $isDbReady, $isSyncing, $syncError, $userSession, $userId } from '../stores/lifeStore';
 import { initDatabase } from '../db';
+import { supabase } from '../lib/supabase';
 import { Wifi, AlertTriangle } from 'lucide-react';
 import { Icon } from './ui/Icon';
 
@@ -12,16 +12,48 @@ export const BootSequence: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: any = null;
+
     const boot = async () => {
+      // 1. Fetch current session first
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          $userSession.set(session);
+          $userId.set(session?.user?.id || 'default_user');
+        }
+      } catch (err) {
+        console.warn('[BootSequence] Failed to retrieve session from Supabase:', err);
+      }
+
+      // 2. Set up live auth state listener
+      try {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+          if (mounted) {
+            $userSession.set(newSession);
+            $userId.set(newSession?.user?.id || 'default_user');
+          }
+        });
+        authSubscription = subscription;
+      } catch (err) {
+        console.warn('[BootSequence] Failed to bind auth state change listener:', err);
+      }
+
+      // 3. Initialize dynamic local database
       try {
         await initDatabase();
       } catch (err) {
-        console.error("Failed to initialize database:", err);
+        console.error("[BootSequence] Failed to initialize database:", err);
       }
     };
+
     boot();
+
     return () => {
       mounted = false;
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
     };
   }, []);
 
@@ -46,3 +78,4 @@ export const BootSequence: React.FC = () => {
     </div>
   );
 };
+

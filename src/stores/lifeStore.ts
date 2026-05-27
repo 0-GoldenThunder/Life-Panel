@@ -1,5 +1,7 @@
 import { atom, computed } from 'nanostores';
+import type { Session } from '@supabase/supabase-js';
 import type { Event, Transaction, Subscription, Inflow, Task } from '../types/models';
+import { supabase } from '../lib/supabase';
 
 /**
  * Shared reactive atoms that any React Island can subscribe to.
@@ -10,6 +12,10 @@ export const $tasks = atom<Task[]>([]);
 export const $transactions = atom<Transaction[]>([]);
 export const $subscriptions = atom<Subscription[]>([]);
 export const $inflows = atom<Inflow[]>([]);
+
+export const $userSession = atom<Session | null>(null);
+export const $userId = atom<string | null>(null);
+
 
 // UI State Atoms
 export const $isSyncing = atom<boolean>(false);
@@ -83,3 +89,65 @@ export const $upcomingPayments = computed(
     }));
   }
 );
+
+export const signOutUser = async () => {
+  // 1. Storage Lock Signal
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('life_panel_logout_purge', 'true');
+  }
+
+  // 2. Halt replications and listeners
+  const { haltActiveSyncAndListeners } = await import('../db');
+  await haltActiveSyncAndListeners();
+
+  // 3. Close & destroy database cleanly to release locks
+  const { getDatabase } = await import('../db');
+  try {
+    const db = getDatabase();
+    await db.destroy();
+  } catch (err) {
+    console.warn('[LifeManager] DB already destroyed or not initialized:', err);
+  }
+
+  // 4. Wait 500ms safety buffer for other tabs to complete lock release
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // 5. Purge with Retry & Backoff (Dexie IndexedDB file delete)
+  const { removeRxDatabase } = await import('rxdb');
+  const { getRxStorageDexie } = await import('rxdb/plugins/storage-dexie');
+  
+  let purged = false;
+  let delay = 500;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await removeRxDatabase('lifemanagerdb', getRxStorageDexie());
+      purged = true;
+      console.log(`[LifeManager] Database purged successfully on attempt ${attempt}`);
+      break;
+    } catch (err) {
+      console.warn(`[LifeManager] Purge attempt ${attempt} failed:`, err);
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2; // exponential backoff
+      }
+    }
+  }
+
+  if (!purged) {
+    console.error('[LifeManager] Failed to purge IndexedDB after 3 attempts.');
+  }
+
+  // 6. Clear storage signal
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('life_panel_logout_purge');
+  }
+
+  // 7. Clear Supabase auth session
+  await supabase.auth.signOut();
+
+  // 8. Redirect to Login Screen
+  if (typeof window !== 'undefined') {
+    window.location.href = '/';
+  }
+};
+

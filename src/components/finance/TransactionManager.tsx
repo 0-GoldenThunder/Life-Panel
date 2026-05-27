@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $transactions, $activeCurrency } from '../../stores/lifeStore';
+import { $transactions, $activeCurrency, $userSession } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -40,9 +40,12 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedSc
     const db = getDatabase();
     const now = new Date().toISOString();
     
+    const session = $userSession.get();
+    const userId = session?.user?.id || 'default_user';
+
     await db.transactions.insert({
       id: uuidv4(),
-      userId: 'default_user', // Will be replaced by real auth ID in production
+      userId,
       amount: parseFloat(amount),
       currency: currency,
       financeScope: scope,
@@ -59,6 +62,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedSc
     setNote('');
     setIsFormOpen(false);
   };
+
 
   const handleDelete = async (id: string) => {
     const db = getDatabase();

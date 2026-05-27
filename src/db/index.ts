@@ -1,8 +1,20 @@
-import { createRxDatabase, type RxConflictHandler, type RxConflictHandlerInput } from 'rxdb';
+import { addRxPlugin, createRxDatabase, type RxConflictHandler, type RxConflictHandlerInput } from 'rxdb';
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
+addRxPlugin(RxDBMigrationSchemaPlugin);
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
-import { eventSchema, transactionSchema, subscriptionSchema, inflowSchema } from './schemas';
-import { $events, $transactions, $subscriptions, $inflows, $isSyncing, $syncError, $isDbReady } from '../stores/lifeStore';
+import { eventSchema, transactionSchema, subscriptionSchema, inflowSchema, taskSchema } from './schemas';
+import { 
+  $events, 
+  $transactions, 
+  $subscriptions, 
+  $inflows, 
+  $tasks,
+  $isSyncing, 
+  $syncError, 
+  $isDbReady,
+  $userSession
+} from '../stores/lifeStore';
 import { safeRefreshSession } from '../lib/authRefresh';
 import { supabase } from '../lib/supabase';
 
@@ -26,13 +38,49 @@ const lwwConflictHandler: RxConflictHandler<any> = {
 
 const migrationStrategies = {};
 
+// v0 → v1: added `currency` and `financeScope` to transactions, subscriptions, inflows.
+const currencyMigration = {
+  1: (oldDoc: any) => ({
+    ...oldDoc,
+    currency:     oldDoc.currency     ?? 'USD',
+    financeScope: oldDoc.financeScope ?? 'personal',
+  }),
+};
+
 let dbInstance: any = null;
+let activeReplications: any[] = [];
+let activeSubscriptions: any[] = [];
 
 export const getDatabase = () => {
   if (!dbInstance) {
     throw new Error("Database not initialized yet.");
   }
   return dbInstance;
+};
+
+export const haltActiveSyncAndListeners = async () => {
+  console.log('[LifeManager] Halting active replications and subscriptions...');
+  // Cancel active replications
+  for (const repl of activeReplications) {
+    try {
+      await repl.cancel();
+    } catch (e) {
+      console.warn('[LifeManager] Error cancelling replication:', e);
+    }
+  }
+  activeReplications = [];
+
+  // Unsubscribe from query listeners
+  for (const sub of activeSubscriptions) {
+    try {
+      sub.unsubscribe();
+    } catch (e) {
+      console.warn('[LifeManager] Error unsubscribing:', e);
+    }
+  }
+  activeSubscriptions = [];
+  
+  $isDbReady.set(false);
 };
 
 export const initDatabase = async () => {
@@ -59,16 +107,48 @@ export const initDatabase = async () => {
     }
   }
 
-  await db.addCollections({
-    events: { schema: eventSchema, conflictHandler: lwwConflictHandler, migrationStrategies },
-    transactions: { schema: transactionSchema, conflictHandler: lwwConflictHandler, migrationStrategies },
-    subscriptions: { schema: subscriptionSchema, conflictHandler: lwwConflictHandler, migrationStrategies },
-    inflows: { schema: inflowSchema, conflictHandler: lwwConflictHandler, migrationStrategies },
-  });
+  try {
+    await db.addCollections({
+      events:        { schema: eventSchema,        conflictHandler: lwwConflictHandler, migrationStrategies },
+      transactions:  { schema: transactionSchema,  conflictHandler: lwwConflictHandler, migrationStrategies: currencyMigration },
+      subscriptions: { schema: subscriptionSchema, conflictHandler: lwwConflictHandler, migrationStrategies: currencyMigration },
+      inflows:       { schema: inflowSchema,       conflictHandler: lwwConflictHandler, migrationStrategies: currencyMigration },
+      tasks:         { schema: taskSchema,         conflictHandler: lwwConflictHandler, migrationStrategies },
+    });
+  } catch (err: any) {
+    const isSchemaError = err?.code === 'DB6' || err?.message?.includes('DB6');
+
+    if (isSchemaError) {
+      console.warn('[LifeManager] DB6 schema mismatch — wiping stale IndexedDB and reloading...');
+
+      // Force-delete all IDB stores directly (no RxDB API — db may be partially init'd)
+      const allDbs: IDBDatabaseInfo[] = await (indexedDB.databases?.() ?? Promise.resolve([]));
+      await Promise.all(
+        allDbs
+          .filter(d => d.name?.startsWith('lifemanagerdb'))
+          .map(d => new Promise<void>((res) => {
+            const req = indexedDB.deleteDatabase(d.name!);
+            req.onsuccess = () => res();
+            req.onerror   = () => res();
+          }))
+      );
+
+      window.location.reload();
+      return;
+    }
+
+    throw err;
+  }
+
+
+
+
+  const session = $userSession.get();
+  const userId = session?.user?.id || 'default_user';
 
   const startReplication = (collection: any, tableName: string) => {
     const replicationState = replicateSupabase({
-      replicationIdentifier: `life_manager_supabase_repl_${tableName}`,
+      replicationIdentifier: `life_manager_supabase_repl_${userId}_${tableName}`,
       client: supabase,
       collection: collection,
       pull: {},
@@ -95,6 +175,7 @@ export const initDatabase = async () => {
       $isSyncing.set(isActive);
     });
 
+    activeReplications.push(replicationState);
     return replicationState;
   };
 
@@ -102,21 +183,53 @@ export const initDatabase = async () => {
   startReplication(db.transactions, 'transactions');
   startReplication(db.subscriptions, 'subscriptions');
   startReplication(db.inflows, 'inflows');
+  startReplication(db.tasks, 'tasks');
 
-  db.events.find().$.subscribe((events: any) => {
+  const subEvents = db.events.find().$.subscribe((events: any) => {
     $events.set(events.map((doc: any) => doc.toJSON()));
   });
-  db.transactions.find().$.subscribe((txs: any) => {
+  activeSubscriptions.push(subEvents);
+
+  const subTxs = db.transactions.find().$.subscribe((txs: any) => {
     $transactions.set(txs.map((doc: any) => doc.toJSON()));
   });
-  db.subscriptions.find().$.subscribe((subs: any) => {
+  activeSubscriptions.push(subTxs);
+
+  const subSubs = db.subscriptions.find().$.subscribe((subs: any) => {
     $subscriptions.set(subs.map((doc: any) => doc.toJSON()));
   });
-  db.inflows.find().$.subscribe((inflows: any) => {
+  activeSubscriptions.push(subSubs);
+
+  const subInflows = db.inflows.find().$.subscribe((inflows: any) => {
     $inflows.set(inflows.map((doc: any) => doc.toJSON()));
   });
+  activeSubscriptions.push(subInflows);
+
+  const subTasks = db.tasks.find().$.subscribe((tasks: any) => {
+    $tasks.set(tasks.map((doc: any) => doc.toJSON()));
+  });
+  activeSubscriptions.push(subTasks);
 
   $isDbReady.set(true);
 
   return db;
 };
+
+// ── Multi-Tab Lock Contention Coordination ─────────────────────
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', async (event) => {
+    if (event.key === 'life_panel_logout_purge' && event.newValue === 'true') {
+      console.log('[LifeManager] Multi-tab logout signal received. Halting and releasing connection locks...');
+      await haltActiveSyncAndListeners();
+      if (dbInstance) {
+        try {
+          await dbInstance.destroy();
+          dbInstance = null;
+        } catch (err) {
+          console.warn('[LifeManager] Failed to destroy DB cleanly in storage listener:', err);
+        }
+      }
+    }
+  });
+}
+

@@ -34,7 +34,7 @@ export const eventSchema = {
 
 export const transactionSchema = {
   title: 'transaction schema',
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -53,7 +53,7 @@ export const transactionSchema = {
 
 export const subscriptionSchema = {
   title: 'subscription schema',
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -72,7 +72,7 @@ export const subscriptionSchema = {
 
 export const inflowSchema = {
   title: 'inflow schema',
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -88,3 +88,20 @@ export const inflowSchema = {
   required: ['id', 'userId', 'name', 'amount', 'currency', 'financeScope', 'type', 'nextExpectedDate', 'isActive', 'createdAt', 'updatedAt'],
   indexes: ['nextExpectedDate']
 };
+
+export const taskSchema = {
+  title: 'task schema',
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    ...commonProperties,
+    title: { type: 'string' },
+    description: { type: 'string' },
+    status: { type: 'string', enum: ['pending', 'in_progress', 'completed', 'archived'] },
+    priority: { type: 'number', minimum: 1, maximum: 3 },
+    dueDate: { type: ['string', 'null'], format: 'date-time' }
+  },
+  required: ['id', 'userId', 'title', 'status', 'priority', 'createdAt', 'updatedAt'],
+  indexes: ['updatedAt', 'status']
+};

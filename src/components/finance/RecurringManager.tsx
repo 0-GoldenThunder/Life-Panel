@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
-import { $subscriptions, $inflows, $activeCurrency } from '../../stores/lifeStore';
+import { $subscriptions, $inflows, $activeCurrency, $userSession } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
 import { v4 as uuidv4 } from 'uuid';
 import { Icon } from '../ui/Icon';
@@ -35,9 +35,12 @@ export const RecurringManager: React.FC<RecurringManagerProps> = ({ type }) => {
     // Default next billing to 1 month from now
     const nextDate = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
     
+    const session = $userSession.get();
+    const userId = session?.user?.id || 'default_user';
+
     const doc = {
       id: uuidv4(),
-      userId: 'default_user',
+      userId: userId,
       name: name,
       amount: parseFloat(amount),
       currency: currency,
@@ -59,6 +62,7 @@ export const RecurringManager: React.FC<RecurringManagerProps> = ({ type }) => {
     setName('');
     setIsFormOpen(false);
   };
+
 
   const handleToggleActive = async (id: string, currentActive: boolean) => {
     const db = getDatabase();

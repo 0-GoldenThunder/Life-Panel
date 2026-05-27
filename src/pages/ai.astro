@@ -1,12 +1,13 @@
 ---
+export const prerender = false;
 import AppLayout from '../layouts/AppLayout.astro';
-import { Icon } from '../components/ui/Icon';
-import { Sparkles, BrainCircuit } from 'lucide-react';
+import { AIAdvisor } from '../components/AIAdvisor';
+import { BrainCircuit } from 'lucide-react';
 ---
 
-<AppLayout title="AI Advisor">
-  <div class="flex flex-col gap-8 max-w-7xl mx-auto w-full pt-8 pb-32 lg:pb-12 h-full min-h-screen">
-    
+<AppLayout title="AI Advisor — Life Panel">
+  <div class="flex flex-col gap-8 max-w-4xl mx-auto w-full pt-8 pb-32 lg:pb-12">
+
     <header class="flex flex-col gap-2">
       <div class="flex items-center gap-3">
         <h1 class="text-3xl lg:text-4xl font-bold font-sans tracking-tight text-platinum flex items-center gap-3">
@@ -15,32 +16,11 @@ import { Sparkles, BrainCircuit } from 'lucide-react';
         <span class="bg-luxury-gold/20 text-luxury-gold text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider">Beta</span>
       </div>
       <p class="text-platinum/50 text-sm lg:text-base max-w-2xl">
-        Your personal financial and schedule intelligence engine.
+        Your personal financial intelligence engine. Analyzes real data, surfaces critical risks, and recommends specific actions.
       </p>
     </header>
 
-    <div class="flex-1 flex flex-col items-center justify-center py-20 px-4">
-      <div class="max-w-md w-full bg-[#0A0A0A]/50 border border-luxury-gold/30 rounded-2xl p-8 backdrop-blur-xl flex flex-col items-center text-center gap-6 relative overflow-hidden group">
-        
-        {/* Glow effect */}
-        <div class="absolute inset-0 bg-luxury-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        
-        <div class="w-20 h-20 rounded-full bg-luxury-gold/10 border border-luxury-gold/30 flex items-center justify-center relative z-10">
-          <Icon icon={BrainCircuit} className="w-10 h-10 text-luxury-gold glow-gold" />
-        </div>
-        
-        <div class="flex flex-col gap-3 relative z-10">
-          <h2 class="text-2xl font-bold text-platinum">Coming Soon</h2>
-          <p class="text-platinum/60 text-sm leading-relaxed">
-            We are fine-tuning the AI Advisor. Soon, it will provide predictive analytics, intelligent budgeting advice, and automated schedule optimizations based on your behavior.
-          </p>
-        </div>
-        
-        <button disabled class="relative z-10 mt-2 bg-[#1A1A1A] border border-[#333] text-platinum/30 px-6 py-2.5 rounded-lg font-semibold text-sm cursor-not-allowed flex items-center gap-2">
-          <Icon icon={Sparkles} className="w-4 h-4" />
-          Join Waitlist
-        </button>
-      </div>
-    </div>
+    <AIAdvisor client:load />
+
   </div>
 </AppLayout>
