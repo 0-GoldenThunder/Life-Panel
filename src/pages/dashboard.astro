@@ -24,7 +24,7 @@ const dateString = today.toLocaleDateString(undefined, { weekday: 'long', day: '
     </div>
     
     <div>
-      <MockDataInjector client:only="react" />
+      <MockDataInjector client:load />
     </div>
   </header>
 
@@ -33,44 +33,44 @@ const dateString = today.toLocaleDateString(undefined, { weekday: 'long', day: '
     
     <!-- Row 1: High Priority Stats -->
     <section class="col-span-1 md:col-span-2 row-span-1">
-      <NetBalanceCard client:only="react" />
+      <NetBalanceCard client:load />
     </section>
 
     <section class="col-span-1 row-span-1">
-      <MonthlySpendCard client:only="react" />
+      <MonthlySpendCard client:load />
     </section>
 
     <section class="col-span-1 row-span-2">
-      <UpcomingPaymentsCard client:only="react" />
+      <UpcomingPaymentsCard client:load />
     </section>
 
     <!-- Row 2: Charts and Snapshots -->
     <section class="col-span-1 md:col-span-2 row-span-1">
-      <FinanceMiniChart client:only="react" />
+      <FinanceMiniChart client:load />
     </section>
 
     <section class="col-span-1 row-span-1">
-      <UpcomingEventsCard client:only="react" />
+      <UpcomingEventsCard client:load />
     </section>
 
     <!-- Row 3: Snapshots and Growth -->
     <section class="col-span-1 md:col-span-2 row-span-1">
-      <GrowthMiniChart client:only="react" />
+      <GrowthMiniChart client:load />
     </section>
 
     <section class="col-span-1 row-span-1">
-      <PersonalSnapshot client:only="react" />
+      <PersonalSnapshot client:load />
     </section>
 
     <section class="col-span-1 row-span-1">
-      <BusinessSnapshot client:only="react" />
+      <BusinessSnapshot client:load />
     </section>
 
   </div>
 
   <!-- Centerpiece Overall Financial Status Summary -->
   <section class="mt-6 w-full">
-    <OverallFinancialStatusChart client:only="react" />
+    <OverallFinancialStatusChart client:load />
   </section>
 
 </AppLayout>

@@ -3,8 +3,10 @@ import { useStore } from '@nanostores/react';
 import { $activeCurrency, $userSession, signOutUser } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
 import { Globe, User, Palette, Download, Shield, LogOut } from 'lucide-react';
+import { useHydrated } from '../../hooks/useHydrated';
 
 export const SettingsManager: React.FC = () => {
+  const isHydrated = useHydrated();
   const activeCurrency = useStore($activeCurrency);
   const userSession = useStore($userSession);
 
@@ -13,6 +15,15 @@ export const SettingsManager: React.FC = () => {
     // Ideally, we'd also save this to a user profile in the DB, 
     // but for now setting the store is enough for the MVP.
   };
+
+  if (!isHydrated) {
+    return (
+      <div className="flex flex-col gap-8 max-w-3xl animate-pulse">
+        <div className="h-32 bg-[#0A0A0A]/50 border border-[#222] rounded-xl" />
+        <div className="h-64 bg-[#0A0A0A]/50 border border-[#222] rounded-xl" />
+      </div>
+    );
+  }
 
   const email = userSession?.user?.email || 'offline@lifepanel.app';
   const displayName = userSession?.user?.user_metadata?.full_name || email.split('@')[0];

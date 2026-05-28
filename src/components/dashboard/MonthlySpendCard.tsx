@@ -3,6 +3,7 @@ import { useStore } from '@nanostores/react';
 import { $transactions, $activeCurrency, $isDbReady } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
 import { CreditCard } from 'lucide-react';
+import { useHydrated } from '../../hooks/useHydrated';
 
 const EXCHANGE_RATES: Record<string, number> = {
   USD: 1,
@@ -17,9 +18,14 @@ const convertCurrency = (amount: number, fromCurrency: string, targetCurrency: s
 };
 
 export const MonthlySpendCard: React.FC = () => {
+  const isHydrated = useHydrated();
   const transactions = useStore($transactions);
   const currency = useStore($activeCurrency);
   const isDbReady = useStore($isDbReady);
+
+  if (!isHydrated) {
+    return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;
+  }
 
   // Compute spend for current month
   const now = new Date();

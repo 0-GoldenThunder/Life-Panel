@@ -8,8 +8,10 @@ import { Icon } from '../ui/Icon';
 import { Plus, Trash2, CheckCircle2, Circle, Flag, Calendar, ListTodo, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { Task, TaskPriority, TaskStatus } from '../../types/models';
+import { useHydrated } from '../../hooks/useHydrated';
 
 export const TaskManager: React.FC = () => {
+  const isHydrated = useHydrated();
   const tasks = useStore($tasks);
   const userId = useStore($userId);
 
@@ -22,6 +24,14 @@ export const TaskManager: React.FC = () => {
 
   // Filter State
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
+
+  if (!isHydrated) {
+    return (
+      <div className="flex flex-col gap-6 w-full animate-pulse">
+        <div className="h-[400px] bg-[#0A0A0A]/50 border border-[#222] rounded-2xl"></div>
+      </div>
+    );
+  }
 
   const activeTasks = tasks.filter((t: Task) => !t._deleted);
 
@@ -88,137 +98,127 @@ export const TaskManager: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-4 w-full">
       {/* Header and Controls */}
-      <div className="flex items-center justify-between p-6 bg-[#0A0A0A]/50 border border-[#222] rounded-2xl backdrop-blur-xl shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-luxury-gold/10 rounded-lg">
-            <Icon icon={ListTodo} className="w-5 h-5 text-luxury-gold glow-gold" />
-          </div>
-          <div>
-            <h3 className="text-xl font-serif text-platinum tracking-tight">
-              Personal Tasks
-            </h3>
-            <p className="text-xs text-platinum/40 uppercase tracking-widest mt-0.5">Manage your action items</p>
-          </div>
+      <div className="flex items-center justify-between p-4 bg-[#0A0A0A]/50 border border-[#222] rounded-xl backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <Icon icon={ListTodo} className="w-5 h-5 text-luxury-gold glow-gold" />
+          <h3 className="text-sm font-semibold text-platinum/60 uppercase tracking-widest">
+            Personal Tasks
+          </h3>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex bg-[#111] p-1 rounded-xl border border-[#222]">
-            {(['active', 'completed', 'all'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300",
-                  activeTab === tab ? "bg-luxury-gold/10 text-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.1)]" : "text-platinum/40 hover:text-platinum hover:bg-[#1a1a1a]"
-                )}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          
-          <button
-            onClick={() => setIsFormOpen(!isFormOpen)}
-            className="flex items-center gap-2 bg-luxury-gold text-obsidian px-5 py-2.5 rounded-xl font-bold hover:bg-white transition-all duration-300 text-sm shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-          >
-            {isFormOpen ? (
-              <><Icon icon={X} className="w-4 h-4" />Cancel</>
-            ) : (
-              <><Icon icon={Plus} className="w-4 h-4" />New Task</>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Tabs */}
-      <div className="flex md:hidden bg-[#111] p-1 rounded-xl border border-[#222]">
-        {(['active', 'completed', 'all'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "flex-1 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300 text-center",
-              activeTab === tab ? "bg-luxury-gold/10 text-luxury-gold" : "text-platinum/40"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
+        <button
+          onClick={() => setIsFormOpen(!isFormOpen)}
+          className="flex items-center gap-1.5 bg-luxury-gold text-obsidian px-3 py-1.5 rounded-lg font-semibold hover:bg-luxury-gold/90 transition-colors text-xs"
+        >
+          {isFormOpen ? (
+            <><Icon icon={X} className="w-3.5 h-3.5" />Cancel</>
+          ) : (
+            <><Icon icon={Plus} className="w-3.5 h-3.5" />Add Task</>
+          )}
+        </button>
       </div>
 
       {/* Quick Add Form */}
       {isFormOpen && (
-        <form onSubmit={handleAddTask} className="bg-[#111]/80 border border-[#333] backdrop-blur-xl p-6 md:p-8 rounded-2xl flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-300 shadow-2xl">
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Action Item</label>
+        <form onSubmit={handleAddTask} className="bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl p-5 rounded-xl flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-platinum/50 uppercase tracking-wider">Task Title</label>
             <input 
               type="text" 
               required 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none text-base transition-colors" 
+              className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none text-sm" 
               placeholder="What needs to be done?" 
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Priority Level</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-platinum/50 uppercase tracking-wider">Priority</label>
               <select 
                 value={priority} 
                 onChange={e => setPriority(Number(e.target.value) as TaskPriority)} 
-                className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none appearance-none transition-colors"
+                className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none text-sm"
               >
-                <option value={1}>Low - When Possible</option>
-                <option value={2}>Medium - Important</option>
-                <option value={3}>High - Urgent</option>
+                <option value={1}>Low</option>
+                <option value={2}>Medium</option>
+                <option value={3}>High</option>
               </select>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Target Date</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-platinum/50 uppercase tracking-wider">Due Date</label>
               <input 
                 type="date" 
                 value={dueDate} 
                 onChange={e => setDueDate(e.target.value)} 
-                className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none transition-colors" 
+                className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none text-sm" 
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Context / Notes</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-platinum/50 uppercase tracking-wider">Description (Optional)</label>
             <textarea 
               value={description} 
               onChange={e => setDescription(e.target.value)} 
               rows={2} 
-              className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none resize-none transition-colors" 
-              placeholder="Add details, links, or context..." 
+              className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none resize-none text-sm" 
+              placeholder="Add details..." 
             />
           </div>
 
-          <div className="flex justify-end pt-2">
-            <button 
-              type="submit" 
-              className="bg-luxury-gold text-obsidian px-8 py-3 rounded-xl font-bold hover:bg-white transition-colors shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-            >
-              Add to Checklist
-            </button>
-          </div>
+          <button 
+            type="submit" 
+            className="bg-luxury-gold text-obsidian px-4 py-2 rounded-lg font-semibold hover:bg-luxury-gold/90 transition-colors text-sm"
+          >
+            Create Task
+          </button>
         </form>
       )}
 
-      {/* Task List Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 min-h-[160px]">
+      {/* Tabs / Filters */}
+      <div className="flex bg-[#1A1A1A] p-1 rounded-lg border border-[#222] self-start">
+        <button
+          onClick={() => setActiveTab('active')}
+          className={cn(
+            "px-4 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all duration-200",
+            activeTab === 'active' ? "bg-[#333] text-platinum" : "text-platinum/50 hover:text-platinum"
+          )}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setActiveTab('completed')}
+          className={cn(
+            "px-4 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all duration-200",
+            activeTab === 'completed' ? "bg-[#333] text-platinum" : "text-platinum/50 hover:text-platinum"
+          )}
+        >
+          Completed
+        </button>
+        <button
+          onClick={() => setActiveTab('all')}
+          className={cn(
+            "px-4 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all duration-200",
+            activeTab === 'all' ? "bg-[#333] text-platinum" : "text-platinum/50 hover:text-platinum"
+          )}
+        >
+          All
+        </button>
+      </div>
+
+      {/* Task List */}
+      <div className="flex flex-col gap-2 min-h-[160px]">
         <AnimatePresence mode="popLayout">
           {filteredTasks.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="col-span-full p-12 text-center border border-[#222] rounded-2xl bg-[#0A0A0A]/30 text-platinum/40 text-sm flex flex-col items-center justify-center gap-3 backdrop-blur-md"
+              className="p-8 text-center border border-[#222] rounded-xl bg-[#0A0A0A]/30 text-platinum/40 text-sm"
             >
-              <Icon icon={CheckCircle2} className="w-12 h-12 opacity-20" />
-              <p>No {activeTab === 'all' ? '' : activeTab} tasks currently in queue.</p>
+              No {activeTab === 'all' ? '' : activeTab} tasks found.
             </motion.div>
           ) : (
             filteredTasks.map((task: Task) => {
@@ -227,76 +227,65 @@ export const TaskManager: React.FC = () => {
                 <motion.div
                   key={task.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.25 }}
                   className={cn(
-                    "flex flex-col p-5 rounded-2xl border transition-all duration-300 group backdrop-blur-md",
+                    "flex items-start justify-between p-4 rounded-xl border transition-all group",
                     isCompleted
-                      ? "bg-[#050505]/40 border-[#111] opacity-60"
+                      ? "bg-[#050505]/50 border-[#111] opacity-50"
                       : task.priority === 3
-                      ? "bg-[#0A0A0A]/80 border-luxury-gold/30 hover:border-luxury-gold/60 shadow-[0_4px_20px_rgba(212,175,55,0.05)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.1)]"
-                      : "bg-[#0A0A0A]/60 border-[#222] hover:border-[#333] hover:shadow-lg hover:bg-[#111]/80"
+                      ? "bg-[#0A0A0A]/50 border-luxury-gold/30 hover:border-luxury-gold/50 glow-gold"
+                      : "bg-[#0A0A0A]/50 border-[#222] hover:border-[#333]"
                   )}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
                     <button
                       onClick={() => handleToggleComplete(task.id, task.status)}
                       className={cn(
-                        "mt-1 transition-all duration-300 focus:outline-none shrink-0",
-                        isCompleted 
-                          ? "text-luxury-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]" 
-                          : "text-platinum/30 hover:text-luxury-gold hover:scale-110"
+                        "mt-0.5 transition-colors focus:outline-none",
+                        isCompleted ? "text-luxury-gold" : "text-platinum/40 hover:text-luxury-gold"
                       )}
                       title={isCompleted ? "Mark Pending" : "Mark Completed"}
                     >
-                      <Icon icon={isCompleted ? CheckCircle2 : Circle} className="w-6 h-6" />
+                      <Icon icon={isCompleted ? CheckCircle2 : Circle} className="w-5 h-5" />
                     </button>
                     
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <span className={cn(
-                          "font-semibold text-base text-platinum break-words leading-tight",
-                          isCompleted && "line-through text-platinum/40"
-                        )}>
-                          {task.title}
-                        </span>
-                        <button
-                          onClick={() => handleDelete(task.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1.5 text-platinum/30 hover:text-soft-crimson hover:bg-soft-crimson/10 rounded-lg transition-all shrink-0"
-                          title="Delete Task"
-                        >
-                          <Icon icon={Trash2} className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
+                    <div className="flex flex-col min-w-0">
+                      <span className={cn(
+                        "font-medium text-sm text-platinum break-words",
+                        isCompleted && "line-through text-platinum/50"
+                      )}>
+                        {task.title}
+                      </span>
                       {task.description && !isCompleted && (
-                        <p className="text-sm text-platinum/50 mt-2 line-clamp-2 leading-relaxed">
+                        <span className="text-xs text-platinum/50 mt-1 block">
                           {task.description}
-                        </p>
+                        </span>
                       )}
-                      
-                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#222]/50 text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">
-                        <span className={cn(
-                          "flex items-center gap-1.5",
-                          task.priority === 3 && !isCompleted ? "text-luxury-gold glow-gold" : ""
-                        )}>
-                          <Icon icon={Flag} className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-3 mt-2 text-[10px] text-platinum/40 uppercase tracking-wider">
+                        <span className="flex items-center gap-1">
+                          <Icon icon={Flag} className="w-3 h-3" />
                           {task.priority === 1 ? 'Low' : task.priority === 2 ? 'Medium' : 'High'}
                         </span>
                         {task.dueDate && (
-                          <span className={cn(
-                            "flex items-center gap-1.5",
-                            !isCompleted && new Date(task.dueDate) < new Date() ? "text-soft-crimson glow-error" : ""
-                          )}>
-                            <Icon icon={Calendar} className="w-3.5 h-3.5" />
-                            {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          <span className="flex items-center gap-1">
+                            <Icon icon={Calendar} className="w-3 h-3" />
+                            Due: {new Date(task.dueDate).toLocaleDateString()}
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 text-platinum/40 hover:text-soft-crimson transition-all self-center ml-2"
+                    title="Delete Task"
+                  >
+                    <Icon icon={Trash2} className="w-4 h-4" />
+                  </button>
                 </motion.div>
               );
             })

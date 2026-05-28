@@ -3,12 +3,18 @@ import { useStore } from '@nanostores/react';
 import { $upcomingPayments, $activeCurrency, $isDbReady } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
 import { CalendarClock } from 'lucide-react';
+import { useHydrated } from '../../hooks/useHydrated';
 
 export const UpcomingPaymentsCard: React.FC = () => {
+  const isHydrated = useHydrated();
   const upcoming = useStore($upcomingPayments);
   const currency = useStore($activeCurrency);
   const isDbReady = useStore($isDbReady);
   
+  if (!isHydrated) {
+    return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;
+  }
+
   // Just grabbing the first 3 for the summary card
   const displayItems = upcoming.slice(0, 3);
 

@@ -11,8 +11,10 @@ import {
   type ChartDataPoint,
 } from "../../lib/chartUtils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useHydrated } from "../../hooks/useHydrated";
 
 export const FinanceMiniChart: React.FC = () => {
+  const isHydrated = useHydrated();
   const transactions = useStore($transactions);
   const currency = useStore($activeCurrency);
   const [period, setPeriod] = useState<"month" | "year">("month");
@@ -22,6 +24,10 @@ export const FinanceMiniChart: React.FC = () => {
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
     null,
   );
+
+  if (!isHydrated) {
+    return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;
+  }
 
   const totalBalance = useStore($totalBalance);
 
