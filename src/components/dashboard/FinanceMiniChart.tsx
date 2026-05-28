@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { $transactions, $activeCurrency, $totalBalance } from "../../stores/lifeStore";
+import {
+  $transactions,
+  $activeCurrency,
+} from "../../stores/lifeStore";
 import { Icon } from "../ui/Icon";
-import { LineChart } from "lucide-react";
+import { Activity } from "lucide-react";
 import {
   aggregateLast30Days,
   aggregateLast12Months,
-  normalizePoints,
   bezierPath,
-  type ChartDataPoint,
 } from "../../lib/chartUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHydrated } from "../../hooks/useHydrated";
@@ -19,58 +20,65 @@ export const FinanceMiniChart: React.FC = () => {
   const currency = useStore($activeCurrency);
   const [period, setPeriod] = useState<"month" | "year">("month");
 
-  // Hover & Tooltip State
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
     null,
   );
 
   if (!isHydrated) {
-    return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;
+    return (
+      <div className="flex flex-col p-6 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl h-full relative overflow-hidden animate-pulse">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#1A1A1A] rounded-full"></div>
+            <div className="h-3 w-24 bg-[#1A1A1A] rounded"></div>
+          </div>
+          <div className="h-4 w-16 bg-[#1A1A1A] rounded"></div>
+        </div>
+        <div className="flex-1 w-full h-full min-h-[80px] bg-[#141414]/50 rounded-xl border border-[#222]"></div>
+      </div>
+    );
   }
 
-  const totalBalance = useStore($totalBalance);
-
-  // 1. Aggregate data based on period, using true balance like the huge chart
-  const tempAgg =
+  // Aggregate with 0 start balance, since we only care about cashflow for this chart
+  const aggregated =
     period === "month"
       ? aggregateLast30Days(transactions, currency, 0)
       : aggregateLast12Months(transactions, currency, 0);
 
-  const netPeriodCashflow = tempAgg.reduce((sum, p) => sum + p.cashflow, 0);
-  const startBalance = totalBalance - netPeriodCashflow;
+  // Cashflow Trend specifically tracks the exact net cashflow per day/month
+  const trendValues = aggregated.map((p) => p.cashflow);
 
-  const aggregated =
-    period === "month"
-      ? aggregateLast30Days(transactions, currency, startBalance)
-      : aggregateLast12Months(transactions, currency, startBalance);
-
-  // 2. Extract trend values from the computed balances
-  const trendValues = aggregated.map((p) => p.balance);
-
-  // If no data, fallback
   if (trendValues.length === 0) {
     trendValues.push(0, 0);
   }
 
-  // 3. Determine if Net Gain or Net Loss based on the period's delta
-  const finalTrendVal = trendValues[trendValues.length - 1];
-  const initialTrendVal = trendValues[0];
-  const isGain = finalTrendVal >= initialTrendVal;
+  // Is overall period profitable?
+  const totalPeriodCashflow = trendValues.reduce((sum, val) => sum + val, 0);
+  const isGain = totalPeriodCashflow >= 0;
 
-  // 4. Normalize coordinates for a wider SVG viewport to better fill the card
   const width = 420;
   const height = 90;
-  const points = normalizePoints(trendValues, width, height, 0.15);
+
+  // Local robust normalize points to prevent any NaN crashes
+  const normalizePointsLocal = (values: number[]) => {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    return values.map((val, idx) => ({
+      x: values.length > 1 ? (idx / (values.length - 1)) * width : width / 2,
+      y: height - ((val - min) / range) * height * 0.7 - height * 0.15,
+    }));
+  };
+
+  const points = normalizePointsLocal(trendValues);
   const linePath = bezierPath(points);
 
-  // Create an area path closed at the bottom for the gradient fill
   const areaPath =
     points.length > 0
       ? `${linePath} L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`
       : "";
 
-  // Handle Mouse Events for Hover Tracking
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     if (points.length === 0) return;
 
@@ -122,14 +130,13 @@ export const FinanceMiniChart: React.FC = () => {
 
   return (
     <div className="flex flex-col p-6 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl h-full group hover:border-luxury-gold/30 hover:shadow-[0_0_20px_rgba(212,175,55,0.05)] transition-all duration-500 relative overflow-visible">
-      {/* Header with Title and Toggle Tabs */}
       <div className="flex items-center justify-between mb-4 z-10">
         <a
           href="/growth"
           className="flex items-center gap-2 cursor-pointer select-none"
         >
           <Icon
-            icon={LineChart}
+            icon={Activity}
             className="w-4 h-4 text-platinum/40 group-hover:text-platinum transition-colors"
           />
           <span className="text-xs font-semibold tracking-widest text-platinum/40 uppercase group-hover:text-platinum transition-colors">
@@ -137,7 +144,6 @@ export const FinanceMiniChart: React.FC = () => {
           </span>
         </a>
 
-        {/* Period Selector Toggle */}
         <div className="flex rounded-lg bg-[#141414] p-0.5 border border-[#222]">
           <button
             onClick={(e) => {
@@ -170,7 +176,6 @@ export const FinanceMiniChart: React.FC = () => {
         </div>
       </div>
 
-      {/* SVG Canvas Area */}
       <div className="flex-1 w-full h-full min-h-[80px] flex items-center justify-center relative select-none">
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -180,26 +185,27 @@ export const FinanceMiniChart: React.FC = () => {
           onMouseLeave={handleMouseLeave}
         >
           <defs>
-            {/* Gain Colors: Luxury Gold / Green Glow */}
-            <linearGradient id="gainGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="fmGainGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#C5A059" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#C5A059" stopOpacity="0.0" />
             </linearGradient>
-
-            {/* Loss Colors: Soft Crimson Red Glow */}
-            <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="fmLossGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#8A3324" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#8A3324" stopOpacity="0.0" />
             </linearGradient>
-
-            {/* Glowing filter */}
-            <filter id="miniGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <filter
+              id="fmMiniGlow"
+              x="-10%"
+              y="-10%"
+              width="120%"
+              height="120%"
+            >
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
 
-          {/* Grid lines */}
+          {/* Center Zero Line (Horizontal Axis) */}
           <line
             x1="0"
             y1={height / 2}
@@ -209,55 +215,39 @@ export const FinanceMiniChart: React.FC = () => {
             strokeOpacity="0.03"
             strokeDasharray="3 3"
           />
-          <line
-            x1={width / 2}
-            y1="0"
-            x2={width / 2}
-            y2={height}
-            stroke="#ffffff"
-            strokeOpacity="0.03"
-            strokeDasharray="3 3"
-          />
 
-          {/* Area Fill */}
           <path
             d={areaPath}
-            fill={isGain ? "url(#gainGrad)" : "url(#lossGrad)"}
+            fill={isGain ? "url(#fmGainGrad)" : "url(#fmLossGrad)"}
             className="transition-all duration-500 ease-in-out"
           />
-
-          {/* Main Spline Curve */}
           <path
             d={linePath}
             fill="none"
             stroke={isGain ? "#C5A059" : "#8A3324"}
             strokeWidth="2"
             strokeLinecap="round"
-            filter="url(#miniGlow)"
+            filter="url(#fmMiniGlow)"
             className="transition-all duration-500 ease-in-out"
           />
 
-          {/* Hover Vertical Guide & Circle Marker */}
           {hoveredIndex !== null && points[hoveredIndex] && (
             <>
-              {/* Vertical Track Line */}
               <line
                 x1={points[hoveredIndex].x}
                 y1="0"
                 x2={points[hoveredIndex].x}
                 y2={height}
-                stroke={isGain ? "#C5A059" : "#8A3324"}
+                stroke={trendValues[hoveredIndex] >= 0 ? "#C5A059" : "#8A3324"}
                 strokeOpacity="0.2"
                 strokeWidth="1"
                 strokeDasharray="2 2"
               />
-
-              {/* Glow Dot */}
               <circle
                 cx={points[hoveredIndex].x}
                 cy={points[hoveredIndex].y}
                 r="6"
-                fill={isGain ? "#C5A059" : "#8A3324"}
+                fill={trendValues[hoveredIndex] >= 0 ? "#C5A059" : "#8A3324"}
                 fillOpacity="0.2"
               />
               <circle
@@ -265,14 +255,13 @@ export const FinanceMiniChart: React.FC = () => {
                 cy={points[hoveredIndex].y}
                 r="3"
                 fill="#ffffff"
-                stroke={isGain ? "#C5A059" : "#8A3324"}
+                stroke={trendValues[hoveredIndex] >= 0 ? "#C5A059" : "#8A3324"}
                 strokeWidth="1.5"
               />
             </>
           )}
         </svg>
 
-        {/* Glassmorphic Popup Tooltip */}
         <AnimatePresence>
           {hoveredIndex !== null && tooltipPos && aggregated[hoveredIndex] && (
             <motion.div
@@ -283,39 +272,31 @@ export const FinanceMiniChart: React.FC = () => {
               style={{
                 position: "absolute",
                 left: `${tooltipPos.x - 60}px`,
-                top: `${tooltipPos.y - 90}px`, // Restored height offset with delta block
+                top: `${tooltipPos.y - 120}px`,
                 transform: "translateX(-50%)",
               }}
               className="z-30 pointer-events-none flex flex-col p-2.5 rounded-xl bg-obsidian/85 border border-[#333] backdrop-blur-md shadow-2xl min-w-[120px] max-w-[150px] text-center"
             >
-              {/* Tooltip Arrow */}
               <div className="absolute bottom-[-5px] left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-obsidian border-r border-b border-[#333]"></div>
-
               <span className="text-[9px] font-semibold text-platinum/50 uppercase tracking-widest block mb-0.5">
                 {aggregated[hoveredIndex].label}
               </span>
-
-              {/* Period Cashflow */}
               <div className="text-[10px] text-platinum/80 mb-0.5">
-                Delta:{" "}
-                <span
-                  className={
-                    aggregated[hoveredIndex].cashflow >= 0
-                      ? "text-luxury-gold"
-                      : "text-soft-crimson"
-                  }
-                >
-                  {aggregated[hoveredIndex].cashflow >= 0 ? "+" : ""}
-                  {aggregated[hoveredIndex].cashflow.toLocaleString(undefined, {
-                    maximumFractionDigits: 0,
-                  })}
+                Income:{" "}
+                <span className="font-sans font-semibold tabular-nums text-emerald-500">
+                  +{aggregated[hoveredIndex].income.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </span>
               </div>
-
-              {/* Cumulative Trend value */}
-              <div className="text-[11px] font-serif font-bold text-platinum truncate">
-                <span className="font-serif italic mr-1">{currency}</span>
-                <span className="font-sans tabular-nums">
+              <div className="text-[10px] text-platinum/80 mb-0.5">
+                Expense:{" "}
+                <span className="font-sans font-semibold tabular-nums text-soft-crimson">
+                  -{aggregated[hoveredIndex].expense.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="text-[11px] font-sans font-semibold tabular-nums text-platinum truncate mt-1 pt-1 border-t border-[#333]">
+                <span className="font-serif italic mr-1">Net {currency}</span>
+                <span className={`font-sans tabular-nums ${trendValues[hoveredIndex] >= 0 ? "text-luxury-gold" : "text-soft-crimson"}`}>
+                  {trendValues[hoveredIndex] > 0 ? "+" : ""}
                   {trendValues[hoveredIndex].toLocaleString(undefined, {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,

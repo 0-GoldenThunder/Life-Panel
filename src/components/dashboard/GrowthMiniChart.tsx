@@ -27,7 +27,18 @@ export const GrowthMiniChart: React.FC = () => {
   );
 
   if (!isHydrated) {
-    return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;
+    return (
+      <div className="flex flex-col p-6 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl h-full relative overflow-hidden animate-pulse">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#1A1A1A] rounded-full"></div>
+            <div className="h-3 w-24 bg-[#1A1A1A] rounded"></div>
+          </div>
+          <div className="h-4 w-16 bg-[#1A1A1A] rounded"></div>
+        </div>
+        <div className="flex-1 w-full h-full min-h-[80px] bg-[#141414]/50 rounded-xl border border-[#222]"></div>
+      </div>
+    );
   }
 
   const aggregated =

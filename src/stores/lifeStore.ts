@@ -16,8 +16,8 @@ export const $inflows = atom<Inflow[]>([]);
 export const $userSession = atom<Session | null>(null);
 export const $userId = atom<string | null>(null);
 
-
 // UI State Atoms
+export const $selectedDate = atom<Date | null>(null);
 export const $isSyncing = atom<boolean>(false);
 export const $syncError = atom<string | null>(null); // null = healthy
 export const $lastSyncTime = atom<Date | null>(null);

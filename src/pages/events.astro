@@ -16,11 +16,9 @@ import { TaskManager } from '../components/events/TaskManager';
       </p>
     </header>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-      <div class="col-span-1 xl:col-span-2">
-        <EventCalendar client:load />
-      </div>
-      <div class="col-span-1">
+    <div class="flex flex-col gap-8 w-full">
+      <EventCalendar client:load />
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
         <TaskManager client:load />
       </div>
     </div>
