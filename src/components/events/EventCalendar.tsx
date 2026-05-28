@@ -140,29 +140,29 @@ export const EventCalendar: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
+    <div className="flex flex-col gap-8 w-full">
       {/* Calendar Area */}
-      <div className="flex-1 flex flex-col gap-4">
-        <div className="flex items-center justify-between p-4 bg-[#0A0A0A]/50 border border-[#222] rounded-xl backdrop-blur-xl">
+      <div className="w-full flex flex-col gap-4">
+        <div className="flex items-center justify-between p-5 bg-[#0A0A0A]/50 border border-[#222] rounded-2xl backdrop-blur-xl">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-platinum font-sans tracking-tight">
+            <h2 className="text-2xl font-serif text-platinum tracking-tight">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={prevMonth} className="p-2 text-platinum/50 hover:text-platinum hover:bg-[#1a1a1a] rounded-lg transition-colors">
+            <button onClick={prevMonth} className="p-2.5 text-platinum/50 hover:text-platinum hover:bg-[#1a1a1a] rounded-xl transition-all hover:shadow-[0_0_15px_rgba(212,175,55,0.05)] border border-transparent hover:border-[#333]">
               <Icon icon={ChevronLeft} className="w-5 h-5" />
             </button>
-            <button onClick={nextMonth} className="p-2 text-platinum/50 hover:text-platinum hover:bg-[#1a1a1a] rounded-lg transition-colors">
+            <button onClick={nextMonth} className="p-2.5 text-platinum/50 hover:text-platinum hover:bg-[#1a1a1a] rounded-xl transition-all hover:shadow-[0_0_15px_rgba(212,175,55,0.05)] border border-transparent hover:border-[#333]">
               <Icon icon={ChevronRight} className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="bg-[#0A0A0A]/50 border border-[#222] rounded-xl backdrop-blur-xl overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-[#222]">
+        <div className="bg-[#0A0A0A]/50 border border-[#222] rounded-2xl backdrop-blur-xl overflow-hidden shadow-xl">
+          <div className="grid grid-cols-7 border-b border-[#222] bg-[#111]/30">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-3 text-center text-xs font-semibold text-platinum/40 uppercase tracking-widest">
+              <div key={day} className="p-4 text-center text-xs font-semibold text-platinum/40 uppercase tracking-widest">
                 {day}
               </div>
             ))}
@@ -173,75 +173,82 @@ export const EventCalendar: React.FC = () => {
         </div>
       </div>
 
-      {/* Side Panel for Event List & CRUD */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-4">
-        <div className="flex items-center justify-between p-4 bg-[#0A0A0A]/50 border border-[#222] rounded-xl backdrop-blur-xl">
-          <h3 className="text-sm font-semibold text-platinum/60 uppercase tracking-widest">
-            {selectedDate ? selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) : 'All Events'}
+      {/* Bottom Panel for Event List & CRUD */}
+      <div className="w-full flex flex-col gap-4 bg-[#0A0A0A]/30 border border-[#222]/50 p-6 rounded-2xl backdrop-blur-md">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-serif text-platinum flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-luxury-gold glow-gold"></span>
+            Agenda for {selectedDate ? selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }) : 'All Events'}
           </h3>
           <button 
             onClick={() => setIsFormOpen(!isFormOpen)}
-            className="flex items-center gap-2 bg-luxury-gold text-obsidian px-3 py-1.5 rounded-lg font-semibold hover:bg-luxury-gold/90 transition-colors text-xs"
+            className="flex items-center gap-2 bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/20 px-4 py-2 rounded-xl font-semibold hover:bg-luxury-gold hover:text-obsidian transition-all duration-300 text-sm shadow-[0_0_15px_rgba(212,175,55,0.1)]"
           >
             {isFormOpen ? (
-              <><Icon icon={X} className="w-3 h-3" />Cancel</>
+              <><Icon icon={X} className="w-4 h-4" />Cancel</>
             ) : (
-              <><Icon icon={Plus} className="w-3 h-3" />Add New</>
+              <><Icon icon={Plus} className="w-4 h-4" />New Event</>
             )}
           </button>
         </div>
 
         {isFormOpen && (
-          <form onSubmit={handleAddEvent} className="bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl p-5 rounded-xl flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-platinum/50 uppercase tracking-wider">Title</label>
-              <input type="text" required value={title} onChange={e => setTitle(e.target.value)} className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none" placeholder="Event or goal name..." />
+          <form onSubmit={handleAddEvent} className="bg-[#111]/80 border border-[#333] p-6 rounded-2xl flex flex-col gap-5 animate-in fade-in slide-in-from-top-4 duration-300 mb-4 shadow-2xl">
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Event Title</label>
+              <input type="text" required value={title} onChange={e => setTitle(e.target.value)} className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none transition-colors" placeholder="e.g. Quarterly Review..." />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-platinum/50 uppercase tracking-wider">Type</label>
-                <select value={type} onChange={e => setType(e.target.value as EventType)} className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none">
-                  <option value="event">Event</option>
-                  <option value="goal">Goal</option>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Classification</label>
+                <select value={type} onChange={e => setType(e.target.value as EventType)} className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none transition-colors appearance-none">
+                  <option value="event">Calendar Event</option>
+                  <option value="goal">Strategic Goal</option>
                 </select>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-platinum/50 uppercase tracking-wider">Priority</label>
-                <select value={priority} onChange={e => setPriority(Number(e.target.value) as EventPriority)} className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none">
-                  <option value={1}>Low</option>
-                  <option value={2}>Medium</option>
-                  <option value={3}>High</option>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Priority Level</label>
+                <select value={priority} onChange={e => setPriority(Number(e.target.value) as EventPriority)} className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none transition-colors appearance-none">
+                  <option value={1}>Standard</option>
+                  <option value={2}>Important</option>
+                  <option value={3}>Critical</option>
                 </select>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-2">
-              <input type="checkbox" id="allDay" checked={allDay} onChange={e => setAllDay(e.target.checked)} className="accent-luxury-gold" />
-              <label htmlFor="allDay" className="text-sm text-platinum/80">All Day Event</label>
+            <div className="flex items-center gap-6 mt-1">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className={cn("w-5 h-5 rounded-md border flex items-center justify-center transition-colors", allDay ? "bg-luxury-gold border-luxury-gold" : "bg-[#050505] border-[#333] group-hover:border-luxury-gold/50")}>
+                  {allDay && <Icon icon={CheckCircle2} className="w-3.5 h-3.5 text-obsidian" />}
+                </div>
+                <input type="checkbox" className="hidden" checked={allDay} onChange={e => setAllDay(e.target.checked)} />
+                <span className="text-sm font-medium text-platinum/80 group-hover:text-platinum transition-colors">All Day Event</span>
+              </label>
+
+              {!allDay && (
+                <div className="flex items-center gap-3">
+                  <div className="w-[1px] h-4 bg-[#333]"></div>
+                  <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold ml-2">Time</label>
+                  <input type="time" required={!allDay} value={time} onChange={e => setTime(e.target.value)} className="bg-[#050505] border border-[#222] rounded-lg px-3 py-1.5 text-platinum focus:border-luxury-gold outline-none w-[120px] transition-colors" />
+                </div>
+              )}
             </div>
 
-            {!allDay && (
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs text-platinum/50 uppercase tracking-wider">Time</label>
-                <input type="time" required={!allDay} value={time} onChange={e => setTime(e.target.value)} className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none w-[120px]" />
-              </div>
-            )}
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-platinum/50 uppercase tracking-wider">Notes</label>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-[#1A1A1A] border border-[#333] rounded-lg px-3 py-2 text-platinum focus:border-luxury-gold outline-none resize-none" placeholder="Details (optional)..." />
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] text-platinum/40 uppercase tracking-widest font-semibold">Additional Details</label>
+              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-[#050505] border border-[#222] rounded-xl px-4 py-3 text-platinum focus:border-luxury-gold outline-none resize-none transition-colors" placeholder="Notes, links, or context..." />
             </div>
 
-            <div className="flex justify-end pt-2">
-              <button type="submit" className="bg-luxury-gold text-obsidian px-6 py-2 rounded-lg font-semibold hover:bg-luxury-gold/90 transition-colors text-sm w-full">
-                Save {type === 'goal' ? 'Goal' : 'Event'}
+            <div className="flex justify-end pt-4 border-t border-[#222]/50">
+              <button type="submit" className="bg-luxury-gold text-obsidian px-8 py-3 rounded-xl font-bold hover:bg-white transition-colors text-sm shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                {type === 'goal' ? 'Establish Goal' : 'Schedule Event'}
               </button>
             </div>
           </form>
         )}
 
-        <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+        <div className="w-full">
           <EventGoalManager selectedDate={selectedDate} />
         </div>
       </div>

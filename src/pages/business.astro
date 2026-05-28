@@ -12,11 +12,11 @@ import { ScopeHeader } from '../components/finance/ScopeHeader';
   </header>
 
   <section class="max-w-5xl">
-    <ScopeHeader scope="business" client:load />
+    <ScopeHeader scope="business" client:only="react" />
     
     <div class="mt-8">
       <h2 class="text-lg font-medium text-platinum mb-4">Business Ledger</h2>
-      <TransactionManager forcedScope="business" client:load />
+      <TransactionManager forcedScope="business" client:only="react" />
     </div>
   </section>
 
