@@ -23,6 +23,7 @@ export const $syncError = atom<string | null>(null); // null = healthy
 export const $lastSyncTime = atom<Date | null>(null);
 export const $activeCurrency = atom<string>('IDR'); // Default currency
 export const $isDbReady = atom<boolean>(false); // True after initDatabase() resolves
+export const $sidebarCollapsed = atom<boolean>(false); // Persists across page transitions in SPA mode
 
 // Mock Exchange Rates relative to USD for MVP
 const EXCHANGE_RATES: Record<string, number> = {

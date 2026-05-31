@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Wallet, 
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useStore } from '@nanostores/react';
-import { $isSyncing, $syncError } from '../stores/lifeStore';
+import { $isSyncing, $syncError, $sidebarCollapsed } from '../stores/lifeStore';
 import { Icon } from './ui/Icon';
 import { cn } from '../lib/utils';
 
@@ -61,7 +61,20 @@ const navigation: SidebarGroup[] = [
 ];
 
 export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useStore($sidebarCollapsed);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar_collapsed');
+    if (saved) {
+      $sidebarCollapsed.set(saved === 'true');
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    const newVal = !collapsed;
+    $sidebarCollapsed.set(newVal);
+    localStorage.setItem('sidebar_collapsed', String(newVal));
+  };
   const isSyncing = useStore($isSyncing);
   const syncError = useStore($syncError);
 
@@ -87,7 +100,7 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
           </span>
         )}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggleCollapsed}
           className={cn(
             "p-1.5 text-platinum/50 hover:text-platinum rounded-md hover:bg-[#1A1A1A] transition-colors focus:outline-none",
             collapsed && "mx-auto"

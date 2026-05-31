@@ -142,7 +142,7 @@ export const OverallFinancialStatusChart: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col p-8 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl group hover:border-luxury-gold/30 hover:shadow-[0_0_20px_rgba(212,175,55,0.05)] transition-all duration-500 relative overflow-visible w-full">
+    <div className="flex flex-col p-8 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] backdrop-blur-xl group hover:border-luxury-gold/30 hover:shadow-[0_0_20px_rgba(212,175,55,0.05)] transition-colors transition-shadow duration-500 relative overflow-visible w-full">
 
       <div className="flex items-center justify-between mb-8 z-10">
         <div className="flex items-center gap-2">
