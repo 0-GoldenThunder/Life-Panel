@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $events } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
@@ -6,6 +7,11 @@ import { CalendarDays, ArrowRight } from 'lucide-react';
 
 export const UpcomingEventsCard: React.FC = () => {
   const events = useStore($events);
+  const isHydrated = useHydrated();
+
+  if (!isHydrated) {
+    return <div className="h-[250px] rounded-2xl bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>;
+  }
 
   // Filter for upcoming events/goals and sort by date
   const upcoming = events

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { $personalBalance, $businessBalance, $activeCurrency, $transactions, convertCurrency } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
 import { Wallet, Briefcase, TrendingUp } from 'lucide-react';
@@ -15,6 +16,7 @@ export const ScopeHeader: React.FC<ScopeHeaderProps> = ({ scope }) => {
   const businessBalance = useStore($businessBalance);
   const currency = useStore($activeCurrency);
   const transactions = useStore($transactions);
+  const isHydrated = useHydrated();
 
   const balance = scope === 'personal' ? personalBalance : businessBalance;
   const isPersonal = scope === 'personal';
@@ -32,7 +34,16 @@ export const ScopeHeader: React.FC<ScopeHeaderProps> = ({ scope }) => {
       new Date(t.date).getMonth() === currentMonth &&
       new Date(t.date).getFullYear() === currentYear
     )
-    .reduce((sum, tx) => sum + convertCurrency(tx.amount, tx.currency || 'MYR', currency), 0); // Simplified for MVP
+    .reduce((sum, tx) => sum + convertCurrency(tx.amount, tx.currency || 'MYR', currency), 0);
+
+  if (!isHydrated) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>
+        <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

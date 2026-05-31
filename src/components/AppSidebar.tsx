@@ -1,24 +1,24 @@
-import React, { useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  Briefcase, 
-  ArrowRightLeft, 
-  TrendingUp, 
-  Calendar, 
+import React, { useEffect } from "react";
+import {
+  LayoutDashboard,
+  Wallet,
+  Briefcase,
+  ArrowRightLeft,
+  TrendingUp,
+  Calendar,
   Settings,
   Sparkles,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
   Download,
-  CreditCard
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { useStore } from '@nanostores/react';
-import { $isSyncing, $syncError, $sidebarCollapsed } from '../stores/lifeStore';
-import { Icon } from './ui/Icon';
-import { cn } from '../lib/utils';
+  CreditCard,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useStore } from "@nanostores/react";
+import { $isSyncing, $syncError, $sidebarCollapsed } from "../stores/lifeStore";
+import { Icon } from "./ui/Icon";
+import { cn } from "../lib/utils";
 
 interface SidebarItem {
   name: string;
@@ -34,52 +34,52 @@ interface SidebarGroup {
 
 const navigation: SidebarGroup[] = [
   {
-    name: 'FINANCE',
+    name: "FINANCE",
     items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Personal', href: '/personal', icon: Wallet },
-      { name: 'Business', href: '/business', icon: Briefcase },
-      { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft },
-      { name: 'Inflows', href: '/inflows', icon: Download },
-      { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
-      { name: 'Growth', href: '/growth', icon: TrendingUp },
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Personal", href: "/personal", icon: Wallet },
+      { name: "Business", href: "/business", icon: Briefcase },
+      { name: "Transactions", href: "/transactions", icon: ArrowRightLeft },
+      { name: "Inflows", href: "/inflows", icon: Download },
+      { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
+      { name: "Growth", href: "/growth", icon: TrendingUp },
     ],
   },
   {
-    name: 'PLANNING',
-    items: [
-      { name: 'Events & Goals', href: '/events', icon: Calendar },
-    ],
+    name: "PLANNING",
+    items: [{ name: "Events & Goals", href: "/events", icon: Calendar }],
   },
   {
-    name: 'SYSTEM',
+    name: "SYSTEM",
     items: [
-      { name: 'AI Advisor', href: '/ai', icon: Sparkles, badge: 'BETA' },
-      { name: 'Settings', href: '/settings', icon: Settings },
+      { name: "AI Advisor", href: "/ai", icon: Sparkles, badge: "BETA" },
+      { name: "Settings", href: "/settings", icon: Settings },
     ],
   },
 ];
 
-export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) => {
+export const AppSidebar: React.FC<{ currentPath: string }> = ({
+  currentPath,
+}) => {
   const collapsed = useStore($sidebarCollapsed);
 
   useEffect(() => {
-    const saved = localStorage.getItem('sidebar_collapsed');
+    const saved = localStorage.getItem("sidebar_collapsed");
     if (saved) {
-      $sidebarCollapsed.set(saved === 'true');
+      $sidebarCollapsed.set(saved === "true");
     }
   }, []);
 
   const toggleCollapsed = () => {
     const newVal = !collapsed;
     $sidebarCollapsed.set(newVal);
-    localStorage.setItem('sidebar_collapsed', String(newVal));
+    localStorage.setItem("sidebar_collapsed", String(newVal));
   };
   const isSyncing = useStore($isSyncing);
   const syncError = useStore($syncError);
 
   let syncIndicatorClass = "bg-transparent";
-  if (syncError === 'sync_stalled') {
+  if (syncError === "sync_stalled") {
     syncIndicatorClass = "bg-muted-amber glow-warning";
   } else if (isSyncing) {
     syncIndicatorClass = "bg-luxury-gold glow-gold";
@@ -89,7 +89,7 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
     <aside
       className={cn(
         "hidden md:flex flex-col fixed top-0 left-0 h-screen z-50 transition-all duration-300 border-r border-[#222] bg-obsidian",
-        collapsed ? "w-[80px]" : "w-[240px]"
+        collapsed ? "w-18" : "w-60",
       )}
     >
       {/* Header */}
@@ -103,10 +103,13 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
           onClick={toggleCollapsed}
           className={cn(
             "p-1.5 text-platinum/50 hover:text-platinum rounded-md hover:bg-[#1A1A1A] transition-colors focus:outline-none",
-            collapsed && "mx-auto"
+            collapsed && "mx-auto",
           )}
         >
-          <Icon icon={collapsed ? ChevronRight : ChevronLeft} className="w-5 h-5" />
+          <Icon
+            icon={collapsed ? ChevronRight : ChevronLeft}
+            className="w-5 h-5"
+          />
         </button>
       </div>
 
@@ -131,10 +134,11 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
                       }}
                       title={collapsed ? item.name : undefined}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative",
+                        "flex items-center gap-3 py-2 rounded-lg transition-all duration-200 group relative",
+                        collapsed ? "px-2 justify-center" : "px-3",
                         isActive
                           ? "bg-[#1A1A1A] text-platinum"
-                          : "text-platinum/60 hover:bg-[#111] hover:text-platinum"
+                          : "text-platinum/60 hover:bg-[#111] hover:text-platinum",
                       )}
                     >
                       {isActive && (
@@ -144,7 +148,9 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
                         icon={item.icon}
                         className={cn(
                           "w-5 h-5 shrink-0 transition-colors",
-                          isActive ? "text-luxury-gold" : "group-hover:text-platinum"
+                          isActive
+                            ? "text-luxury-gold"
+                            : "group-hover:text-platinum",
                         )}
                       />
                       {!collapsed && (
@@ -173,17 +179,34 @@ export const AppSidebar: React.FC<{ currentPath: string }> = ({ currentPath }) =
         <div
           className={cn(
             "flex items-center gap-3",
-            collapsed && "justify-center"
+            collapsed && "justify-center",
           )}
-          title={isSyncing ? 'Syncing...' : syncError ? 'Sync Stalled' : 'Synced'}
+          title={
+            isSyncing ? "Syncing..." : syncError ? "Sync Stalled" : "Synced"
+          }
         >
           <div className="relative flex items-center justify-center">
-            <Icon icon={RefreshCw} className={cn("w-4 h-4 text-platinum/40", isSyncing && "animate-spin")} />
-            <span className={cn("absolute -top-1 -right-1 w-2 h-2 rounded-full", syncIndicatorClass)} />
+            <Icon
+              icon={RefreshCw}
+              className={cn(
+                "w-4 h-4 text-platinum/40",
+                isSyncing && "animate-spin",
+              )}
+            />
+            <span
+              className={cn(
+                "absolute -top-1 -right-1 w-2 h-2 rounded-full",
+                syncIndicatorClass,
+              )}
+            />
           </div>
           {!collapsed && (
             <span className="text-xs font-medium text-platinum/40">
-              {isSyncing ? 'Syncing...' : syncError ? 'Sync Stalled' : 'System Synced'}
+              {isSyncing
+                ? "Syncing..."
+                : syncError
+                  ? "Sync Stalled"
+                  : "System Synced"}
             </span>
           )}
         </div>

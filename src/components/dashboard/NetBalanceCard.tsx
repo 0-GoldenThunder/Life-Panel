@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $personalBalance, $businessBalance, $totalBalance, $activeCurrency, $isSyncing, $isDbReady } from '../../stores/lifeStore';
 import { cn } from '../../lib/utils';
@@ -12,9 +13,19 @@ export const NetBalanceCard: React.FC = () => {
   const total = useStore($totalBalance);
   const currency = useStore($activeCurrency);
   const isSyncing = useStore($isSyncing);
-  const isDbReady = useStore($isDbReady);
+  const isDbReadyRaw = useStore($isDbReady);
+  const isHydrated = useHydrated();
+  const isDbReady = isDbReadyRaw && isHydrated;
 
   const [mode, setMode] = React.useState<'combined' | 'personal' | 'business'>('combined');
+
+  if (!isHydrated) {
+    return (
+      <div className="flex flex-col p-6 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] h-[160px] animate-pulse">
+        <div className="mt-auto h-12 w-3/4 rounded-lg bg-[#1A1A1A]"></div>
+      </div>
+    );
+  }
 
   const getDisplayValue = () => {
     switch (mode) {

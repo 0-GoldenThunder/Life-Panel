@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useStore } from '@nanostores/react';
 import { $transactions, $activeCurrency, $isDbReady } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
@@ -21,7 +21,8 @@ export const MonthlySpendCard: React.FC = () => {
   const isHydrated = useHydrated();
   const transactions = useStore($transactions);
   const currency = useStore($activeCurrency);
-  const isDbReady = useStore($isDbReady);
+  const isDbReadyRaw = useStore($isDbReady);
+  const isDbReady = isDbReadyRaw && isHydrated;
 
   if (!isHydrated) {
     return <div className="h-full w-full bg-[#0A0A0A]/50 border border-[#222] rounded-2xl animate-pulse"></div>;

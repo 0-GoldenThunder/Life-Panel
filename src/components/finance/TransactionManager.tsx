@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $transactions, $activeCurrency, $userSession, $isDbReady, convertCurrency } from '../../stores/lifeStore';
 import { getDatabase } from '../../db';
@@ -14,7 +15,9 @@ interface TransactionManagerProps {
 export const TransactionManager: React.FC<TransactionManagerProps> = ({ forcedScope }) => {
   const transactions = useStore($transactions);
   const currency = useStore($activeCurrency);
-  const isDbReady = useStore($isDbReady);
+  const isDbReadyRaw = useStore($isDbReady);
+  const isHydrated = useHydrated();
+  const isDbReady = isDbReadyRaw && isHydrated;
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
   
   // If forcedScope is provided, we use it, otherwise we default to 'all'

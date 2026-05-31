@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $businessBalance, $activeCurrency } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
@@ -7,6 +8,11 @@ import { Briefcase, ArrowRight } from 'lucide-react';
 export const BusinessSnapshot: React.FC = () => {
   const balance = useStore($businessBalance);
   const currency = useStore($activeCurrency);
+  const isHydrated = useHydrated();
+
+  if (!isHydrated) {
+    return <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>;
+  }
 
   return (
     <a 

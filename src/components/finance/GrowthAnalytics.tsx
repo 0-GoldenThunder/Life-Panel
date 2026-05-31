@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $transactions, $activeCurrency, $personalBalance, $businessBalance, $totalBalance } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
@@ -16,11 +17,23 @@ export const GrowthAnalytics: React.FC = () => {
   const personal = useStore($personalBalance);
   const business = useStore($businessBalance);
   const total = useStore($totalBalance);
-
-  // Reusing the advanced chart concept here:
+  const isHydrated = useHydrated();
   const [period, setPeriod] = useState<'month' | 'year' | 'all'>('year');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
+  if (!isHydrated) {
+    return (
+      <div className="flex flex-col gap-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222]"></div>
+          <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222]"></div>
+          <div className="h-32 rounded-2xl bg-[#0A0A0A]/50 border border-[#222]"></div>
+        </div>
+        <div className="h-[500px] rounded-2xl bg-[#0A0A0A]/50 border border-[#222]"></div>
+      </div>
+    );
+  }
 
   // We reuse the logic for 30-days, 12-months, or an all-time variant.
   // For 'all', we could just use a simple aggregation, but 12-months is best for a detailed chart.

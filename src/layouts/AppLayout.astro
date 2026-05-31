@@ -47,7 +47,7 @@ const currentPath = Astro.url.pathname;
     <PageLoader client:load />
 
     <!-- Desktop Sidebar (hidden on mobile) -->
-    <AppSidebar client:load currentPath={currentPath} />
+    <AppSidebar client:load transition:persist="sidebar" currentPath={currentPath} />
 
     <!-- Main Content Area -->
     <!-- Add left margin on md+ to account for the sidebar (default width 240px, or 80px if we supported initial collapsed state from SSR, but we assume 240px for layout) -->
@@ -58,7 +58,7 @@ const currentPath = Astro.url.pathname;
     </main>
 
     <!-- Mobile Bottom Dock (hidden on md+) -->
-    <LuxuryDock client:load currentPath={currentPath} />
+    <LuxuryDock client:load transition:persist="dock" currentPath={currentPath} />
     
     <!-- Global Toasts -->
     <UpdateToast client:load />

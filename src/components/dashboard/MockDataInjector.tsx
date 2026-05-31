@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useHydrated } from '../../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import { $transactions, $subscriptions, $events, $isSyncing } from '../../stores/lifeStore';
 import { Icon } from '../ui/Icon';
@@ -11,6 +12,18 @@ export const MockDataInjector: React.FC = () => {
   const [injected, setInjected] = useState(false);
   const txs = useStore($transactions);
   const isSyncing = useStore($isSyncing);
+  const isHydrated = useHydrated();
+
+  // We can't return a skeleton immediately if we don't have one, but we can hide the buttons or render disabled buttons.
+  // We'll just render nothing (or a skeleton wrapper) during hydration mismatch.
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-8 w-32 rounded-lg bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>
+        <div className="h-8 w-36 rounded-lg bg-[#0A0A0A]/50 border border-[#222] animate-pulse"></div>
+      </div>
+    );
+  }
 
   // Check if we already have mock data (simple check)
   const hasMockData = txs.some(t => t.note === 'MOCK_DATA');

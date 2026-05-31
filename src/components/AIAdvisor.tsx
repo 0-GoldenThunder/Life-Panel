@@ -15,7 +15,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useHydrated } from '../hooks/useHydrated';
 import { useStore } from '@nanostores/react';
 import {
   $transactions, $subscriptions, $inflows,
@@ -405,7 +406,9 @@ export const AIAdvisor: React.FC = () => {
   const subscriptions = useStore($subscriptions);
   const inflows = useStore($inflows);
   const currency = useStore($activeCurrency);
-  const isDbReady = useStore($isDbReady);
+  const isDbReadyRaw = useStore($isDbReady);
+  const isHydrated = useHydrated();
+  const isDbReady = isDbReadyRaw && isHydrated;
 
   const [scope, setScope] = useState<AnalysisScope>('combined');
   const [isLoading, setIsLoading] = useState(false);
