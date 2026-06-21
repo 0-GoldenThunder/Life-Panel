@@ -22,3 +22,12 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Agent / CLI workspace files
+.agent/
+.agents/
+.antigravitycli/
+skills-lock.json
+
+# Editor
+.vscode/
